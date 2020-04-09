@@ -1,0 +1,51 @@
+sig Value {}
+
+sig Cell {
+	succ : one Cell,
+	var value : lone Value
+}
+var one sig RPointer, WPointer in Cell {}
+
+fact ring {
+	all c : Cell | Cell in c.^succ
+}
+
+pred read [v : Value] {
+	some RPointer.value
+	
+     v = RPointer.value	
+	no RPointer.value'
+     RPointer' = RPointer.succ
+
+     WPointer' = WPointer
+     all c : Cell-RPointer | c.value' = c.value
+
+}
+
+pred write [v : Value] {
+	no WPointer.value
+
+	WPointer.value' = v	
+	WPointer' = WPointer.succ
+
+	RPointer' = RPointer
+	all c : Cell-WPointer | c.value' = c.value
+}
+
+pred skip {
+	WPointer' = WPointer
+	RPointer' = RPointer
+	all c : Cell | c.value' = c.value
+}
+
+fact init {
+	RPointer = WPointer
+	no value
+}
+
+fact trans {
+	always ((some v : Value | read[v] or write[v]) or skip)
+}
+
+run {} for 5 but 10 Value
+

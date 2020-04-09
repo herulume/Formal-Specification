@@ -1,0 +1,66 @@
+var sig File {}
+var sig Trash in File {}
+
+
+pred delete[f : File] {
+  f not in Trash     -- guard
+  Trash' = Trash + f -- effect
+  File' = File       -- frame
+}
+
+pred empty[] {
+  some Trash
+  no Trash'
+  File' = File - Trash
+}
+
+pred restore[f : File] {
+  f in Trash
+  Trash' = Trash - f
+  File' = File
+}
+
+pred do_nothing {
+  File' = File
+  Trash' = Trash
+}
+
+fact transitions {
+  no Trash
+  always (
+    (some f: File | delete[f] or restore[f]) or empty[] or do_nothing
+  )
+}
+
+assert restoreAfterDelete {
+  always (all f : File | restore[f] implies once delete[f])
+}
+
+assert deleteAll {
+  always ((File in Trash and empty) implies after (always no File))
+}
+
+assert noNewFiles {
+  always File' in File
+}
+
+assert noEmpty {
+ always (File' != File implies empty)
+}
+
+assert neverEmpty {
+  always (empty implies some f: File | once delete[f])
+}
+
+assert undoOp {
+  always ((some f: File | delete[f] and restore[f]) implies Trash' = Trash)
+}
+
+
+run {}
+check restoreAfterDelete
+check deleteAll
+check noNewFiles
+check noEmpty
+check neverEmpty
+check undoOp

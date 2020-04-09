@@ -1,0 +1,40 @@
+sig Jogador {}
+sig Posicao {
+ prox : one Posicao,
+ jogador : set Jogador
+}
+one sig Partida extends Posicao {}
+one sig Prisao extends Posicao {}
+
+sig Propriedade extends Posicao {}
+
+sig Cor {}
+sig Edificio {}
+sig Rua extends Propriedade {
+  cor : one Cor,
+  edificio : set Edificio
+}
+
+fact noId {
+ no iden & prox
+} 
+
+fact injEdificio {
+ edificio in Rua lone -> one Edificio
+}
+
+fact circular {
+  all p : Posicao | Posicao in p.^prox
+/* open util/ordering[Casa]
+fact circular {
+prox = next + last -> first
+}
+*/
+}
+
+fact jogadorOnePos {
+  all j : Jogador | one jogador.j
+}
+
+
+run { some Propriedade - Rua } for 7 but 2 Cor, exactly 1 Rua, exactly 3 Jogador
